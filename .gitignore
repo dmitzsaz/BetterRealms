@@ -1,0 +1,7 @@
+.env
+__pycache__/
+**/__pycache__/
+worlds_tmp/
+
+.DS_Store
+**/.DS_Store

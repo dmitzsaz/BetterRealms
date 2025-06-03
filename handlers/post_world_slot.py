@@ -3,7 +3,7 @@ from database import crud
 
 async def post_world_slot(request: web.Request):
     realmID = request.match_info.get("id")
-    slot = request.match_info.get("slot")
+    slot = int(request.match_info.get("slot")) - 1
 
     realm = crud.get_realm(realmID)
     if not realm:

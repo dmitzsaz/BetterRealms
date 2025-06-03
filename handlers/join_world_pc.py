@@ -20,7 +20,12 @@ async def join_world_pc(request: web.Request):
     if username not in (realm.members or []) and username not in (realm.owner or []):
         return web.Response(status=403)
 
-    realmsorchestratorID = realm.worlds[realm.active_world]['realmsorchestratorID']
+
+    for i in realm.worlds:
+        if i['id'] == realm.active_world:
+            realmsorchestratorID = i['realmsorchestratorID']
+            break
+
     orchestrator_url = f"{settings.REALMSORCHESTRATOR_URL}/worlds/{realmsorchestratorID}/start"
 
     try:

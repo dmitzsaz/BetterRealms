@@ -42,7 +42,7 @@ def _realm_to_dict(realm: crud.Realm, include_slot: bool = False) -> dict:
                 "settings": [
                     {"name": "hardcore", "value": world.get("isHardcore")}
                 ],
-                "slotId": world.get("id"),
+                "slotId": world.get("id") + 1,
             }
             for world in worlds
         ]

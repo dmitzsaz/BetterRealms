@@ -32,7 +32,7 @@ async def initialize_world(request: web.Request):
     realm.worlds = [
         {
             "name": world_name,
-            "id": 1,
+            "id": 0,
             "picture": "",
             "type": "NORMAL",
             "gameMode": 0,

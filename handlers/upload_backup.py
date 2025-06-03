@@ -61,10 +61,19 @@ async def prepare_and_pack_world(zip_path: str):
     temp_unpack_dir = os.path.join(TEMP_DIR, f"unpack_{uuid.uuid4()}")
     os.makedirs(temp_unpack_dir, exist_ok=True)
 
+    # Распаковываем gzip и затем tar-архив
+    import tarfile
+
+    # Сначала распаковываем gzip в tar
+    tar_path = os.path.join(temp_unpack_dir, "archive.tar")
     with gzip.open(zip_path, 'rb') as f_in:
-        extracted_path = os.path.join(temp_unpack_dir, "extracted_file")
-        with open(extracted_path, 'wb') as f_out:
+        with open(tar_path, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
+
+    with tarfile.open(tar_path, 'r') as tar:
+        tar.extractall(path=temp_unpack_dir)
+
+    os.remove(tar_path)
 
     for root, dirs, files in os.walk(temp_unpack_dir):
         for d in dirs:
@@ -92,7 +101,7 @@ async def prepare_and_pack_world(zip_path: str):
 
 async def upload_handler(request: web.Request):
     realmID = request.match_info.get("realmID")
-    slot = request.match_info.get("slot")
+    slot = int(request.match_info.get("slot")) - 1
 
     realm = crud.get_realm(realmID)
     if not realm:
@@ -118,6 +127,7 @@ async def upload_handler(request: web.Request):
             newWorlds.append(i)
 
     world = create_world(name=f"minecraft_{realmID}_{slot}", s3URL="", status="creating", admins=[realm.owner[0]], players=realm.members)
+    print(world.id)
     await prepare_and_pack_world(final_path)
 
     asyncio.create_task(background_upload_and_update(world.id, final_path, filename))

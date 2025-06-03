@@ -35,8 +35,7 @@ async def put_world_slot(request: web.Request):
     crud.update_realm(realm_id, state=RealmState.OPEN)
 
     worlds = realm.worlds or []
-    # Проверяем, есть ли уже мир с нужным slot/id
-    existing = next((w for w in worlds if w.get("id") == slot), None)
+    existing = next((w for w in worlds if w.get("id") == slot - 1), None)
     if not existing:
         worlds.append({
             **DEFAULT_WORLD_TEMPLATE,

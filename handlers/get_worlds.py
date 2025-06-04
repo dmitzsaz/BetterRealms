@@ -24,8 +24,8 @@ def _realm_to_dict(realm: crud.Realm, include_slot: bool = False) -> dict:
         "maxPlayers": 5,
         "minigameName": None,
         "minigameId": None,
-        "minigameImage": None,
-        "activeSlot": realm.active_world or 1,
+        "minigameImage": None,  
+        "activeSlot": realm.active_world + 1 or 1,
         "slots": None,
         "member": True,
     }

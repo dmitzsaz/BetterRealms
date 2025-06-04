@@ -39,7 +39,7 @@ async def initialize_world(request: web.Request):
             "isHardcore": False,
         }
     ]
-    realm.active_world = 1
+    realm.active_world = 0
 
     crud.update_realm(realm_id, name=realm.name, motd=realm.motd, state=realm.state, worlds=realm.worlds, active_world=realm.active_world)
 

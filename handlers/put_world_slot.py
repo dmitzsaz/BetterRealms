@@ -42,8 +42,8 @@ async def put_world_slot(request: web.Request):
             "id": slot,
             "name": f"World {slot}",
         })
-        crud.update_realm(realm_id, active_world=slot, worlds=worlds)
+        crud.update_realm(realm_id, active_world=slot - 1, worlds=worlds)
     else:
-        crud.update_realm(realm_id, active_world=slot)
+        crud.update_realm(realm_id, active_world=slot - 1)
 
     return web.json_response(True) 

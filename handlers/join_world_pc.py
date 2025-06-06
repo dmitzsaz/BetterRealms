@@ -16,9 +16,9 @@ async def join_world_pc(request: web.Request):
     if not realm:
         return web.Response(status=404)
 
-    username = request.get("AuthData", {}).get("username")
-    if username not in (realm.members or []) and username not in (realm.owner or []):
-        return web.Response(status=403)
+    uuid = request.get("AuthData", {}).get("uuid")
+    if uuid not in (realm.members or []) and uuid not in (realm.owner or []):
+        return web.Response(text="You are not a member of this realm", status=403)
 
 
     for i in realm.worlds:

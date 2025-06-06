@@ -1,6 +1,6 @@
 from typing import Optional, List
 from .db import SessionLocal
-from .models import World, Realm, Invite, RealmState
+from .models import World, Realm, Invite, RealmState, UUIDtoNickname
 
 # Получить все миры
 def get_worlds() -> List[World]:
@@ -193,9 +193,9 @@ def get_invites_by_realm(realm_id: int) -> List[Invite]:
         return session.query(Invite).filter(Invite.realms_id == realm_id).all()
 
 
-def create_invite(realm_id: int, invited_username: str) -> Invite:
+def create_invite(realm_id: int, invited_username: str, invited_uuid: str) -> Invite:
     with SessionLocal() as session:
-        invite = Invite(realms_id=realm_id, invited_username=invited_username)
+        invite = Invite(realms_id=realm_id, invited_username=invited_username, invited_uuid=invited_uuid)
         session.add(invite)
         session.commit()
         session.refresh(invite)
@@ -228,3 +228,28 @@ def accept_invite(invite_id: int) -> bool:
         session.delete(invite)
         session.commit()
         return True
+
+def get_uuid_to_nickname(uuid: str) -> Optional[UUIDtoNickname]:
+    with SessionLocal() as session:
+        return session.query(UUIDtoNickname).filter(UUIDtoNickname.uuid == uuid).first()
+
+def get_uuid_to_nickname_by_username(username: str) -> Optional[UUIDtoNickname]:
+    with SessionLocal() as session:
+        return session.query(UUIDtoNickname).filter(UUIDtoNickname.nickname == username).first()
+
+def create_uuid_to_nickname(uuid: str, nickname: str) -> UUIDtoNickname:
+    with SessionLocal() as session:
+        uuid_to_nickname = UUIDtoNickname(uuid=uuid, nickname=nickname)
+        session.add(uuid_to_nickname)
+        session.commit()
+        session.refresh(uuid_to_nickname)
+    
+def update_uuid_to_nickname(uuid: str, nickname: str) -> UUIDtoNickname:
+    with SessionLocal() as session:
+        uuid_to_nickname = session.query(UUIDtoNickname).filter(UUIDtoNickname.uuid == uuid).first()
+        if not uuid_to_nickname:
+            return False
+        uuid_to_nickname.nickname = nickname
+        session.commit()
+        session.refresh(uuid_to_nickname)
+        return uuid_to_nickname

@@ -49,3 +49,9 @@ class Invite(Base):
 
     # relationships
     realm = relationship("Realm", back_populates="invites")
+
+class UUIDtoNickname(Base):
+    __tablename__ = "uuidtonickname"
+
+    uuid = Column(String(64), nullable=False, primary_key=True)
+    nickname = Column(String(255), nullable=False)

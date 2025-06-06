@@ -4,8 +4,10 @@ import boto3
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from botocore.config import Config
+import requests
 
 from config import settings
+from database import crud
 
 verifiedTokens = {}
 
@@ -38,11 +40,12 @@ async def logging_middleware(request, handler):
 async def validateAuth(request, handler):
     username, uuid, version, fullToken = None, None, None, None
 
-    cookies = request.headers.get("Cookie").split(";")
+    cookies = request.headers.get("Cookie", "").split(";")
+
     for i in cookies:
         parts = i.split("=")
-        name = parts[0]
-        data = parts[1]
+        name = parts[0].strip()
+        data = parts[1].strip()
 
         if name == "user":
             username = data
@@ -65,6 +68,9 @@ async def validateAuth(request, handler):
     }
 
     request['AuthData'] = {"username": username, "uuid": uuid}
+    if username and uuid:
+        if not crud.update_uuid_to_nickname(uuid, username):
+            crud.create_uuid_to_nickname(uuid, username)
     return await handler(request)
 
     async with ClientSession() as session:
@@ -99,3 +105,44 @@ async def upload_to_r2(file_path: str, object_name: str) -> str:
     loop = asyncio.get_event_loop()
     with ThreadPoolExecutor() as pool:
         return await loop.run_in_executor(pool, upload_to_r2_sync, file_path, object_name)
+
+async def getUUIDtoNickname(username: str) -> str:
+    uuid_to_nickname = crud.get_uuid_to_nickname_by_username(username)
+    if uuid_to_nickname:
+        return uuid_to_nickname.nickname
+
+    url = f"https://api.mojang.com/users/profiles/minecraft/{username}"
+    async with ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                udid = data.get("id")
+                return udid
+
+    return None
+
+def getPlayerNameSync(uuid: str) -> str:
+    uuid_to_nickname = crud.get_uuid_to_nickname(uuid)
+    if uuid_to_nickname:
+        return uuid_to_nickname.nickname
+
+    url = f"https://api.mojang.com/user/profiles/{uuid}/names"
+    with requests.get(url) as resp:
+        if resp.status_code == 200:
+            data = resp.json()
+            return data[0]["name"]
+
+    return None
+
+async def getPlayerName(uuid: str) -> str:
+    uuid_to_nickname = crud.get_uuid_to_nickname(uuid)
+    if uuid_to_nickname:
+        return uuid_to_nickname.nickname
+
+    url = f"https://api.mojang.com/user/profiles/{uuid}/names"
+    async with ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+
+    return None

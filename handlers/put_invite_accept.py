@@ -22,7 +22,7 @@ async def put_invite_accept(request: web.Request):
     if not realm:
         return web.Response(status=404)
 
-    realm.members.append(invite.invited_username)
+    realm.members.append(invite.invited_uuid)
     crud.update_realm(realm.id, members=realm.members)
 
     return web.Response(status=204) 
